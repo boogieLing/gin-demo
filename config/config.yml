@@ -1,0 +1,18 @@
+# 服务器端口
+system:
+  part: :8202
+  stauts: debug
+# log存放目录
+logger:
+  path: ./logs/gin-server.log
+# author信息
+author:
+  name: r0
+  email: boogieling_o@qq.com
+# mongo配置
+mongo:
+  address: 127.0.0.1
+  part: 27017
+  db: gin
+  username: admin
+  password: cherilee233
