@@ -82,3 +82,4 @@ ENTRYPOINT ["/usr/local/mongodb/bin/mongod", "--auth", "-f", "/usr/local/mongodb
 # 停止、删除容器和镜像
 # docker container stop gin-mongo5-mongo; docker container rm gin-mongo5-mongo && docker image rm gin-mongo5-mongo
 # docker container stop gin-mongo5-gin; docker container rm gin-mongo5-gin && docker image rm gin-mongo5-gin
+# docker network rm gin-mongo5-net
