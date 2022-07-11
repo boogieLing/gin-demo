@@ -10,6 +10,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"gin-demo/core"
 	"gin-demo/global"
@@ -34,7 +35,16 @@ func main() {
 	} else {
 		global.Config = initialize.InitDevConfig()
 	}
-	utils.RecordRunPid()
 	initialize.InitLogger()
+	var ctx context.Context
+	ctx, global.ClientEngine = initialize.InitDB()
+	global.DBEngine = global.ClientEngine.Database(global.Config.Mongo.DB)
+	// 必须关闭 但是defer
+	defer func() {
+		if err := global.ClientEngine.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
+	utils.RecordRunPid()
 	core.RunWindowsServer()
 }

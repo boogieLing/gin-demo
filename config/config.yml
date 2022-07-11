@@ -11,8 +11,12 @@ author:
   email: boogieling_o@qq.com
 # mongo配置
 mongo:
-  address: 127.0.0.1
+  address: 172.97.0.1 # 与docker-net网关相同即可
   part: 27017
   db: gin
   username: admin
   password: cherilee233
+# docker自定义网络的配置
+docker:
+  subnet: 172.97.0.0/16 # docker-net 子网号
+  gateway: 172.97.0.1 # docker-net 网关

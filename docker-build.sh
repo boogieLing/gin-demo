@@ -149,7 +149,7 @@ if [ "${wget_flag}"x == "true"x ];then
   for wget in ${wget_files[@]}
   do
     connect_str_prefix=" \&\& wget "
-    connect_str_suffix=" \-p \/tmp "
+    connect_str_suffix=" \-P \/tmp "
     wget_apply_str=$wget_apply_str$connect_str_prefix$wget$connect_str_suffix
   done
 else
@@ -170,7 +170,7 @@ if [ "${copy_flag}"x == "true"x ];then
 else
   copy_apply_atr=""
 fi
-sed -i "s/\${LOAD_FILE_COPY}/$copy_apply_atr/g" ./Dockerfile
+sed -i "s/\${LOAD_FILE_COPY}/${copy_apply_atr}/g" ./Dockerfile
 # 指定mongod配置文件
 sed -i "s/\${MONGOD_FILE}/${mongod_config}/g" ./Dockerfile
 # yaml解析脚本
@@ -184,7 +184,7 @@ mongo_db=${gin_mongo_db}
 mongo_db_username=${gin_mongo_username}
 mongo_db_password=${gin_mongo_password}
 touch tmp-mongo-add-admin.js
-echo "conn = new Mongo();db = conn.getDB(\"${mongo_db}\");db.createUser({user:\"${mongo_db_username}\",pwd:\"${mongo_db_password}\",roles: [{ role: \"readWrite\", db: \"${mongo_db}\" }]});db.createCollection(\"test\");" > tmp-mongo-add-admin.js
+echo "conn = new Mongo();db = conn.getDB(\"${mongo_db}\");db.createUser({user:\"${mongo_db_username}\",pwd:\"${mongo_db_password}\",roles: [{ role: \"readWrite\", db: \"${mongo_db}\" }]});db.createCollection(\"hello\");" > tmp-mongo-add-admin.js
 cat tmp-mongo-add-admin.js
 # 将gin的端口暴露
 # 这里截断了${gin_system_part}的第0位，因为配置文件中的端口值带了":"的前缀
@@ -194,17 +194,30 @@ echo "mongod config: ${mongod_config}"
 echo "mongod db: ${mongo_db}"
 echo "mongod username: ${mongo_db_username}"
 echo "mongod password: ${mongo_db_password}"
+echo "docker subnet: ${gin_docker_subnet}"
+echo "docker gateway: ${gin_docker_gateway}"
 echo "gin config: ${gin_config}"
 
+if [ "${gin_mongo_part}"x != "${mongod_net_port}"x ];then
+  echo -e "\033[41;30m mongo port in ${gin_config}:${gin_mongo_part} not equal in ${mongod_config}:${mongod_net_port} \033[0m"
+  exit
+fi
+
 # cat Dockerfile
+# 清除旧镜像和旧网络
+docker container stop gin-mongo5-mongo; docker container rm gin-mongo5-mongo ; docker image rm gin-mongo5-mongo;
+docker container stop gin-mongo5-gin; docker container rm gin-mongo5-gin ; docker image rm gin-mongo5-gin;
+docker network rm gin-mongo5-net;
 # 构建镜像
 docker build --target mongo_apply -t gin-mongo5-mongo . &&
-docker build --target gin_apply -t gin-mongo5-gin .
+docker build --target gin_apply -t gin-mongo5-gin . &&
 # 以网桥模式新建一个docker网络
-docker network create -d bridge gin-mongo5-net
+docker network create -d bridge --subnet ${gin_docker_subnet} --gateway ${gin_docker_gateway} gin-mongo5-net &&
 # 以脱离模式运行容器
 docker run --name gin-mongo5-mongo -d -p ${mongod_net_port}:${mongod_net_port} --network gin-mongo5-net gin-mongo5-mongo:latest &&
 docker run --name gin-mongo5-gin -d -p ${gin_system_part:1}:${gin_system_part:1} --network gin-mongo5-net gin-mongo5-gin:latest
-
 # 删除临时生成的文件
 rm tmp-mongo-add-admin.js
+# check
+docker container ls -a
+docker network ls

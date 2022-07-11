@@ -15,10 +15,11 @@ ${LOAD_FILE_COPY}
 
 # 复制当前项目所有文件
 COPY ["./", "/home/gin-server"]
+RUN true
 
 FROM os_file_apply AS gin_apply
-
 COPY --from=os_file_apply /tmp/go1.17.11.linux-amd64.tar.gz /tmp/
+RUN true
 ENV GO111MODULE=on \
     CGO_ENABLED=0 \
     GOOS=linux \
@@ -43,11 +44,12 @@ EXPOSE ${GIN_EXPOSE}
 ENTRYPOINT ["./gin-server"]
 
 FROM os_file_apply AS mongo_apply
-
-COPY --from=os_file_apply /tmp/mongodb-linux-x86_64-ubuntu1804-5.0.9.tgz /tmp/
-# 安装 mongo
 # 此COPY是必要的，所以可以将额外的COPY也放到这里
 COPY ["${MONGOD_FILE}", "entrypoint.sh", "tmp-mongo-add-admin.js", "/tmp/"]
+RUN true
+COPY --from=os_file_apply /tmp/mongodb-linux-x86_64-ubuntu1804-5.0.9.tgz /tmp/
+RUN true
+# 安装 mongo
 RUN tar -zxvf /tmp/mongodb-linux-x86_64-ubuntu1804-5.0.9.tgz -C /usr/local/ \
     && mv /usr/local/mongodb-linux-x86_64-ubuntu1804-5.0.9 /usr/local/mongodb \
     && mv /tmp/${MONGOD_FILE} /usr/local/mongodb/mongod.conf\
@@ -80,6 +82,6 @@ ENTRYPOINT ["/usr/local/mongodb/bin/mongod", "--auth", "-f", "/usr/local/mongodb
 # docker exec -it gin-mongo5-mongo /bin/bash
 
 # 停止、删除容器和镜像
-# docker container stop gin-mongo5-mongo; docker container rm gin-mongo5-mongo && docker image rm gin-mongo5-mongo
-# docker container stop gin-mongo5-gin; docker container rm gin-mongo5-gin && docker image rm gin-mongo5-gin
+# docker container stop gin-mongo5-mongo; docker container rm gin-mongo5-mongo ; docker image rm gin-mongo5-mongo
+# docker container stop gin-mongo5-gin; docker container rm gin-mongo5-gin ; docker image rm gin-mongo5-gin
 # docker network rm gin-mongo5-net

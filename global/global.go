@@ -12,9 +12,12 @@ package global
 import (
 	"gin-demo/config"
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var (
-	Config *config.SystemConfig
-	Logger *logrus.Logger
+	Config       *config.SystemConfig
+	Logger       *logrus.Logger
+	ClientEngine *mongo.Client
+	DBEngine     *mongo.Database
 )

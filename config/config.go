@@ -13,6 +13,7 @@ type SystemConfig struct {
 	System `yaml:"system"`
 	Logger `yaml:"logger"`
 	Author `yaml:"author"`
+	Mongo  `yaml:"mongo"`
 }
 
 type System struct {
@@ -27,4 +28,12 @@ type Logger struct {
 type Author struct {
 	Name  string `yaml:"name"`
 	Email string `yaml:"email"`
+}
+
+type Mongo struct {
+	Address  string `yaml:"address"`
+	Part     string `yaml:"part"`
+	DB       string `yaml:"db"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
 }

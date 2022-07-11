@@ -10,8 +10,11 @@
 package service
 
 import (
+	"context"
 	"fmt"
+	"gin-demo/global"
 	"gin-demo/models/views"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserService struct{}
@@ -24,7 +27,15 @@ func NewUserService() *UserService {
 func (u *UserService) HelloWorld(params views.HelloVo) (vo *views.HelloResultVo, err error) {
 	var result views.HelloResultVo
 	patchParams(&params)
-	result.Msg = fmt.Sprintf("Hello %s, beg your pardon: %s", params.Username, params.Msg)
+	insertResult, err := global.DBEngine.Collection("hello").InsertOne(context.TODO(), params)
+	if err != nil {
+		global.Logger.Error(err)
+		return nil, err
+	}
+
+	result.Msg = fmt.Sprintf("Hello %s, beg your pardon: %s, _id: %s",
+		params.Username, params.Msg, insertResult.InsertedID.(primitive.ObjectID).Hex(),
+	)
 	return &result, err
 }
 
