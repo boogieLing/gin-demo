@@ -42,8 +42,8 @@ RUN sed -i "s@/archive.ubuntu.com/@/mirrors.tuna.tsinghua.edu.cn/@g" /etc/apt/so
     FROM alpine as build_copy
     ONBUILD COPY file /file
 
-    FROM alpine as build_no_copy
-    ONBUILD RUN echo "I don't copy"
+    FROM alpine as build_wget
+    ONBUILD RUN wget https://golang.google.cn/dl/go1.17.11.linux-amd64.tar.gz
     # hard code to change?
     FROM build_${BUILD_ENV}
     # other stuff
