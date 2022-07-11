@@ -80,7 +80,7 @@ function create_variables() {
 #  cp -p Dockerfile Dockerfile.old
 #fi
 # 处理从命令行中传递的参数
-mongod_config="mongod.conf"
+mongod_config_name="mongod.conf"
 mongo_db="gin_db"
 mongo_db_username="super_admin"
 mongo_db_password="super_password"
@@ -92,13 +92,13 @@ do
         mongod_str=$OPTARG
 
         OLD_IFS="$IFS"
-        IFS="#"
+        IFS="+"
         params=($mongod_str)
         IFS="$OLD_IFS"
         for (( i=0;i<${#params[@]};i++ ))
         do
           if [ $i -eq 0 ];then
-            mongod_config=${params[$i]}
+            mongod_config_name=${params[$i]}
           fi
           if [ $i -eq 1 ];then
             mongo_db_username=${params[$i]}
@@ -172,17 +172,21 @@ else
 fi
 sed -i "s/\${LOAD_FILE_COPY}/${copy_apply_atr}/g" ./Dockerfile
 # 指定mongod配置文件
-sed -i "s/\${MONGOD_FILE}/${mongod_config}/g" ./Dockerfile
+sed -i "s/\${MONGOD_FILE_NAME}/${mongod_config_name}/g" ./Dockerfile
 # yaml解析脚本
 # 解析mongod配置的变量
-create_variables ${mongod_config} "mongod_"
+create_variables ${mongod_config_name} "mongod_"
 # 将mongod的端口暴露
 sed -i "s/\${MONGOD_EXPOSE}/${mongod_net_port}/g" ./Dockerfile
 # 解析gin配置的变量
 create_variables ${gin_config} "gin_"
 mongo_db=${gin_mongo_db}
-mongo_db_username=${gin_mongo_username}
-mongo_db_password=${gin_mongo_password}
+if [[ ${gin_mongo_username} != "" ]]; then
+    mongo_db_username=${gin_mongo_username}
+fi
+if [[ ${gin_mongo_password} != "" ]]; then
+    mongo_db_password=${gin_mongo_password}
+fi
 touch tmp-mongo-add-admin.js
 echo "conn = new Mongo();db = conn.getDB(\"${mongo_db}\");db.createUser({user:\"${mongo_db_username}\",pwd:\"${mongo_db_password}\",roles: [{ role: \"readWrite\", db: \"${mongo_db}\" }]});db.createCollection(\"hello\");" > tmp-mongo-add-admin.js
 cat tmp-mongo-add-admin.js
@@ -190,7 +194,7 @@ cat tmp-mongo-add-admin.js
 # 这里截断了${gin_system_part}的第0位，因为配置文件中的端口值带了":"的前缀
 sed -i "s/\${GIN_EXPOSE}/${gin_system_part:1}/g" ./Dockerfile
 
-echo "mongod config: ${mongod_config}"
+echo "mongod config: ${mongod_config_name}"
 echo "mongod db: ${mongo_db}"
 echo "mongod username: ${mongo_db_username}"
 echo "mongod password: ${mongo_db_password}"
@@ -199,7 +203,7 @@ echo "docker gateway: ${gin_docker_gateway}"
 echo "gin config: ${gin_config}"
 
 if [ "${gin_mongo_part}"x != "${mongod_net_port}"x ];then
-  echo -e "\033[41;30m mongo port in ${gin_config}:${gin_mongo_part} not equal in ${mongod_config}:${mongod_net_port} \033[0m"
+  echo -e "\033[41;30m mongo port in ${gin_config}:${gin_mongo_part} not equal in ${mongod_config_name}:${mongod_net_port} \033[0m"
   exit
 fi
 

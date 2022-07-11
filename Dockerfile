@@ -45,14 +45,14 @@ ENTRYPOINT ["./gin-server"]
 
 FROM os_file_apply AS mongo_apply
 # 此COPY是必要的，所以可以将额外的COPY也放到这里
-COPY ["${MONGOD_FILE}", "entrypoint.sh", "tmp-mongo-add-admin.js", "/tmp/"]
+COPY ["${MONGOD_FILE_NAME}", "entrypoint.sh", "tmp-mongo-add-admin.js", "/tmp/"]
 RUN true
 COPY --from=os_file_apply /tmp/mongodb-linux-x86_64-ubuntu1804-5.0.9.tgz /tmp/
 RUN true
 # 安装 mongo
 RUN tar -zxvf /tmp/mongodb-linux-x86_64-ubuntu1804-5.0.9.tgz -C /usr/local/ \
     && mv /usr/local/mongodb-linux-x86_64-ubuntu1804-5.0.9 /usr/local/mongodb \
-    && mv /tmp/${MONGOD_FILE} /usr/local/mongodb/mongod.conf\
+    && mv /tmp/${MONGOD_FILE_NAME} /usr/local/mongodb/mongod.conf\
     && echo "export PATH=\$PATH:/usr/local/mongodb/bin" >> ~/.bashrc \
     && /bin/bash -c "source ~/.bashrc"\
     && mkdir -p /usr/local/mongodb/data/db \
@@ -60,7 +60,7 @@ RUN tar -zxvf /tmp/mongodb-linux-x86_64-ubuntu1804-5.0.9.tgz -C /usr/local/ \
     && touch /usr/local/mongodb/logs/mongod.log \
     && rm -rf /tmp/mongodb-linux-x86_64-ubuntu1804-5.0.9.tgz\
     # 先以无验证的方式后台启动mongod，实际ENTRYPOINT时必须开启验证
-    && /usr/local/mongodb/bin/mongod -f /usr/local/mongodb/${MONGOD_FILE} --fork --logpath /usr/local/mongodb/logs/mongod.log\
+    && /usr/local/mongodb/bin/mongod -f /usr/local/mongodb/${MONGOD_FILE_NAME} --fork --logpath /usr/local/mongodb/logs/mongod.log\
     && sleep 5\
     && /usr/local/mongodb/bin/mongo /tmp/tmp-mongo-add-admin.js
 
@@ -68,7 +68,7 @@ RUN tar -zxvf /tmp/mongodb-linux-x86_64-ubuntu1804-5.0.9.tgz -C /usr/local/ \
 # EXPOSE 27017
 EXPOSE ${MONGOD_EXPOSE}
 
-ENTRYPOINT ["/usr/local/mongodb/bin/mongod", "--auth", "-f", "/usr/local/mongodb/${MONGOD_FILE}"]
+ENTRYPOINT ["/usr/local/mongodb/bin/mongod", "--auth", "-f", "/usr/local/mongodb/${MONGOD_FILE_NAME}"]
 
 # 流程：构建->脱离模式运行容器->即时设置权限
 # 构建镜像
