@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # ===========================外部解析yaml的工具=============================
 # Based on https://gist.github.com/pkuczynski/8665367
 function parse_yaml() {

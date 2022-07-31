@@ -77,6 +77,7 @@ ENTRYPOINT ["/usr/local/mongodb/bin/mongod", "--auth", "-f", "/usr/local/mongodb
 # docker run --name gin-mongo5 -d -p 27017:27017 gin-mongo5:latest
 # 以交互终端运行容器 并覆盖entrypoint
 # docker run --name gin-mongo5-gin -it -p 8202:8202 --entrypoint="/bin/bash -c \"cd /home/gin-server && go build -o /home/gin-server/gin-server /home/gin-server/main.go\"" gin-mongo5-gin:latest
+# docker run --name gin-mongo5-mongo -it -p 27017:27017 --entrypoint="/bin/bash" --network gin-mongo5-net gin-mongo5-mongo:latest
 
 # docker attach gin-mongo5
 # docker exec -it gin-mongo5-mongo /bin/bash
